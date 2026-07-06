@@ -4,9 +4,7 @@
 
 One-click Finder toolbar buttons for macOS: open **iTerm2** in the current Finder folder — and optionally run any command there, like `claude`, `lazygit`, or your own tools.
 
-![Finder toolbar with launcher buttons](docs/finder-toolbar.png)
-
-Click a button → iTerm2 opens a new tab, `cd`'ed into the folder, running your command.
+![Demo: click a toolbar button, iTerm2 opens cd'ed into the folder and runs the command](docs/demo.gif)
 
 ## Features
 
@@ -36,7 +34,9 @@ This builds and copies the bundled buttons to `~/Applications/`:
 | `OpenClaude.app` | …then run `claude` |
 | `OpenHermes.app` | …then run `hermes` |
 
-Then open `~/Applications` in Finder and **hold `Cmd` while dragging** each app onto the Finder toolbar.
+Then open `~/Applications` in Finder and **hold `Cmd` while dragging** each app onto the Finder toolbar:
+
+![Finder toolbar with launcher buttons](docs/finder-toolbar.png)
 
 On first click, macOS asks for Automation permission (to control Finder and iTerm2) — click **Allow** once for each.
 

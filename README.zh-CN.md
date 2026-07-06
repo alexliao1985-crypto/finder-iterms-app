@@ -4,9 +4,7 @@
 
 macOS Finder 工具栏一键按钮：在 **iTerm2** 中打开当前 Finder 文件夹，并可选自动执行任意命令（如 `claude`、`lazygit` 或你自己的工具）。
 
-![Finder 工具栏上的启动按钮](docs/finder-toolbar.png)
-
-点击按钮 → iTerm2 新开 Tab，自动 cd 到该文件夹，并执行你的命令。
+![演示：点击工具栏按钮，iTerm2 自动 cd 到该文件夹并执行命令](docs/demo.gif)
 
 ## 特性
 
@@ -36,7 +34,9 @@ git clone https://github.com/alexliao1985-crypto/finder-iterms-app.git && cd fin
 | `OpenClaude.app` | cd 后自动执行 `claude` |
 | `OpenHermes.app` | cd 后自动执行 `hermes` |
 
-然后在 Finder 中打开 `~/Applications`（前往文件夹 `Cmd+Shift+G`），**按住 `Cmd` 把 app 拖到 Finder 工具栏**。
+然后在 Finder 中打开 `~/Applications`（前往文件夹 `Cmd+Shift+G`），**按住 `Cmd` 把 app 拖到 Finder 工具栏**：
+
+![Finder 工具栏上的启动按钮](docs/finder-toolbar.png)
 
 首次点击时 macOS 会弹"自动化"授权（控制 Finder 和 iTerm2），各点一次"允许"。
 
