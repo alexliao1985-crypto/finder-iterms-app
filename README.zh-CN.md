@@ -25,7 +25,7 @@ Finder 工具栏:  [ iTerm ] [ Claude ] [ Hermes ] [ ... 你自己的按钮 ]
 ## 安装
 
 ```bash
-git clone <this-repo> && cd finder-iterms-app
+git clone https://github.com/alexliao1985-crypto/finder-iterms-app.git && cd finder-iterms-app
 ./build.sh --install
 ```
 

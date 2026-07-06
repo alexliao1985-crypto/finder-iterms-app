@@ -25,7 +25,7 @@ Finder toolbar:  [ iTerm ] [ Claude ] [ Hermes ] [ ... your own ]
 ## Install
 
 ```bash
-git clone <this-repo> && cd finder-iterms-app
+git clone https://github.com/alexliao1985-crypto/finder-iterms-app.git && cd finder-iterms-app
 ./build.sh --install
 ```
 
