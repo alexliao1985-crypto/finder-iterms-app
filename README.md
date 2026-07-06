@@ -4,10 +4,9 @@
 
 One-click Finder toolbar buttons for macOS: open **iTerm2** in the current Finder folder — and optionally run any command there, like `claude`, `lazygit`, or your own tools.
 
-```
-Finder toolbar:  [ iTerm ] [ Claude ] [ Hermes ] [ ... your own ]
-       click  →  iTerm2 opens a new tab, cd'ed into the folder, running your command
-```
+![Finder toolbar with launcher buttons](docs/finder-toolbar.png)
+
+Click a button → iTerm2 opens a new tab, `cd`'ed into the folder, running your command.
 
 ## Features
 
