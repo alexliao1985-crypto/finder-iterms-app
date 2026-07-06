@@ -134,8 +134,14 @@ if $INSTALL; then
     mkdir -p ~/Applications
     for name in "${PACKAGED[@]}"; do
         target="$HOME/Applications/$name.app"
-        rm -rf "$target"
-        ditto "dist/$name.app" "$target"
+        # Finder 工具栏通过 alias(含 inode) 引用 app，保留 .app 目录本身只替换内容，
+        # 避免整目录 rm -rf 导致重装后工具栏引用失效
+        if [[ -d "$target" ]]; then
+            rm -rf "$target/Contents"
+            ditto "dist/$name.app/Contents" "$target/Contents"
+        else
+            ditto "dist/$name.app" "$target"
+        fi
         echo "    $target"
     done
     echo ""
