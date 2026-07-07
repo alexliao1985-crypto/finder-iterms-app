@@ -1,0 +1,7 @@
+{
+  "name": "OpenIniTerm",
+  "display_name": "iTerm Here",
+  "bundle_id": "com.finderlauncher.iterm",
+  "command": "",
+  "icon": "/Applications/iTerm.app/Contents/Resources/iTerm2 App Icon for Release.icns"
+}

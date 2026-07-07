@@ -1,3 +1,6 @@
 .build/
 dist/
 .DS_Store
+
+# 用户全局 gitignore 可能忽略 *.json，这里强制包含变体配置
+!variants/*.json

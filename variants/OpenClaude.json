@@ -1,0 +1,7 @@
+{
+  "name": "OpenClaude",
+  "display_name": "Claude Code Here",
+  "bundle_id": "com.finderlauncher.claude",
+  "command": "claude --dangerously-skip-permissions",
+  "icon": "/Applications/Claude.app/Contents/Resources/electron.icns"
+}

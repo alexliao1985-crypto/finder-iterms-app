@@ -1,0 +1,7 @@
+{
+  "name": "OpenHermes",
+  "display_name": "Hermes Here",
+  "bundle_id": "com.finderlauncher.hermes",
+  "command": "hermes",
+  "icon": "/Applications/Hermes.app/Contents/Resources/icon.icns"
+}
