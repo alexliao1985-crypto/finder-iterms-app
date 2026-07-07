@@ -31,8 +31,11 @@ This builds and copies the bundled buttons to `~/Applications/`:
 | App | What it does |
 |---|---|
 | `OpenIniTerm.app` | Open iTerm2, `cd` to the current Finder folder |
-| `OpenClaude.app` | …then run `claude` |
+| `OpenClaude.app` | …then run `claude --dangerously-skip-permissions` |
 | `OpenHermes.app` | …then run `hermes` |
+
+> [!WARNING]
+> The bundled `OpenClaude` button starts Claude Code with `--dangerously-skip-permissions`, which skips all permission prompts. If you prefer the safer default, change `"command"` to `"claude"` in `variants/OpenClaude.json` and re-run `./build.sh --install OpenClaude`.
 
 Then open `~/Applications` in Finder and **hold `Cmd` while dragging** each app onto the Finder toolbar:
 
