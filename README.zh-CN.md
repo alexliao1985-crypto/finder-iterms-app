@@ -34,12 +34,14 @@ git clone https://github.com/alexliao1985-crypto/finder-iterms-app.git && cd fin
 | `OpenIniTerm.app` | 打开 iTerm2 并 cd 到当前 Finder 目录 |
 | `OpenClaude.app` | cd 后自动执行 `claude` |
 | `OpenClaudeYolo.app` | cd 后自动执行 `claude --dangerously-skip-permissions` |
+| `OpenCodexYolo.app` | cd 后自动执行 `codex --dangerously-bypass-approvals-and-sandbox` |
 | `OpenHermes.app` | cd 后自动执行 `hermes` |
 
 如果在 Finder 中恰好选中了一个文件夹，按钮会打开该文件夹；否则打开最前窗口所在目录。
 
 > [!WARNING]
 > `OpenClaudeYolo` 以 `--dangerously-skip-permissions` 参数启动 Claude Code，会跳过所有权限确认。确实需要时再把它拖上工具栏。
+> `OpenCodexYolo` 以 `--dangerously-bypass-approvals-and-sandbox` 参数启动 Codex，会跳过审批并关闭沙盒限制。确实需要时再把它拖上工具栏。
 
 然后在 Finder 中打开 `~/Applications`（前往文件夹 `Cmd+Shift+G`），**按住 `Cmd` 把 app 拖到 Finder 工具栏**：
 

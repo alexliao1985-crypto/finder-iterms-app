@@ -34,12 +34,14 @@ This builds and copies the bundled buttons to `~/Applications/`:
 | `OpenIniTerm.app` | Open iTerm2, `cd` to the current Finder folder |
 | `OpenClaude.app` | …then run `claude` |
 | `OpenClaudeYolo.app` | …then run `claude --dangerously-skip-permissions` |
+| `OpenCodexYolo.app` | …then run `codex --dangerously-bypass-approvals-and-sandbox` |
 | `OpenHermes.app` | …then run `hermes` |
 
 If a single folder is selected in Finder, the buttons open that folder; otherwise they open the front window's folder.
 
 > [!WARNING]
 > `OpenClaudeYolo` starts Claude Code with `--dangerously-skip-permissions`, which skips all permission prompts. Only put it on your toolbar if you want that.
+> `OpenCodexYolo` starts Codex with `--dangerously-bypass-approvals-and-sandbox`, which skips approvals and sandbox restrictions. Only put it on your toolbar if you want that.
 
 Then open `~/Applications` in Finder and **hold `Cmd` while dragging** each app onto the Finder toolbar:
 

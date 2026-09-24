@@ -35,12 +35,15 @@ finder-iterms-app/
 │   ├── OpenIniTerm.json
 │   ├── OpenClaude.json
 │   ├── OpenClaudeYolo.json
+│   ├── OpenCodexYolo.json
 │   └── OpenHermes.json
 ├── build.sh                    # 编译一次，按配置批量打出 N 个 .app
 ├── .github/workflows/ci.yml    # macOS CI：单测 + 打包 + plist/签名校验
 └── dist/                       # 产物（git 忽略）
     ├── OpenIniTerm.app
     ├── OpenClaude.app
+    ├── OpenClaudeYolo.app
+    ├── OpenCodexYolo.app
     └── OpenHermes.app
 ```
 
