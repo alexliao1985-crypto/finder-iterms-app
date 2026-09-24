@@ -1,0 +1,7 @@
+{
+  "name": "OpenClaudeYolo",
+  "display_name": "Claude Code Here (Skip Permissions)",
+  "bundle_id": "com.finderlauncher.claudeyolo",
+  "command": "claude --dangerously-skip-permissions",
+  "icon": "/Applications/Claude.app/Contents/Resources/electron.icns"
+}

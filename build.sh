@@ -16,6 +16,11 @@ for arg in "$@"; do
     esac
 done
 
+if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: 需要 jq（macOS 15+ 自带；更早的系统请先 brew install jq）"
+    exit 1
+fi
+
 echo "==> swift build -c release"
 swift build -c release
 BIN=".build/release/FinderLauncher"
@@ -44,6 +49,11 @@ resolve_icon() {
     return 1
 }
 
+# XML 转义，用于写入 Info.plist 的 <string> 值（命令里常见 && / < / >）
+xml_escape() {
+    printf '%s' "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'
+}
+
 PACKAGED=()
 
 package_variant() {
@@ -55,6 +65,13 @@ package_variant() {
     command=$(jq -r '.command' "$cfg")
     icon=$(jq -r '.icon // ""' "$cfg")
 
+    # iTerm2 的 write text 会把换行当回车，多行命令只会执行一部分
+    case "$command" in
+        *$'\n'*|*$'\r'*)
+            echo "ERROR: $cfg 的 command 不能包含换行，多条命令请用 && 或 ; 连接"
+            exit 1 ;;
+    esac
+
     local app="dist/$name.app"
     echo "==> packaging $app (command='$command')"
 
@@ -65,9 +82,11 @@ package_variant() {
     local icns
     if icns=$(resolve_icon "$icon"); then
         cp "$icns" "$app/Contents/Resources/AppIcon.icns"
-    else
+    elif [[ -f "$DEFAULT_ICON" ]]; then
         echo "    WARN: 图标未找到 ($icon)，使用默认 iTerm2 图标"
         cp "$DEFAULT_ICON" "$app/Contents/Resources/AppIcon.icns"
+    else
+        echo "    WARN: 图标未找到 ($icon)，且未安装 iTerm2，使用系统默认图标"
     fi
 
     cat > "$app/Contents/Info.plist" <<EOF
@@ -80,11 +99,11 @@ package_variant() {
     <key>CFBundleExecutable</key>
     <string>$name</string>
     <key>CFBundleIdentifier</key>
-    <string>$bundle_id</string>
+    <string>$(xml_escape "$bundle_id")</string>
     <key>CFBundleName</key>
-    <string>$display_name</string>
+    <string>$(xml_escape "$display_name")</string>
     <key>CFBundleDisplayName</key>
-    <string>$display_name</string>
+    <string>$(xml_escape "$display_name")</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
     <key>CFBundleVersion</key>
@@ -98,10 +117,12 @@ package_variant() {
     <key>NSAppleEventsUsageDescription</key>
     <string>需要控制 Finder 获取当前目录，并控制 iTerm2 打开终端。</string>
     <key>LauncherCommand</key>
-    <string>$command</string>
+    <string>$(xml_escape "$command")</string>
 </dict>
 </plist>
 EOF
+
+    plutil -lint -s "$app/Contents/Info.plist"
 
     codesign --force -s - "$app"
     PACKAGED+=("$name")

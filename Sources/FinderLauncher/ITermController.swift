@@ -1,21 +1,13 @@
 import Foundation
+import LauncherCore
 
 enum ITermController {
     /// 在 iTerm2 中打开目录并执行命令。
     /// iTerm2 已有窗口时开新 Tab，否则开新窗口；未运行时自动拉起。
-    static func open(directory: String, command: String) {
-        // shell 层转义：单引号包裹，内部单引号替换为 '\''
-        let escapedDir = directory.replacingOccurrences(of: "'", with: "'\\''")
-        var shellCommand = "cd '\(escapedDir)'"
-        let trimmed = command.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !trimmed.isEmpty {
-            shellCommand += " && \(trimmed)"
-        }
-
-        // AppleScript 字符串字面量转义：\ 和 "
-        let asCommand = shellCommand
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
+    @discardableResult
+    static func open(directory: String, command: String) -> Result<String, AppleScriptError> {
+        // 先做 shell 层转义，再整体转成 AppleScript 字符串字面量
+        let shellCommand = Escaping.shellCommand(directory: directory, command: command)
 
         let script = """
         tell application "iTerm"
@@ -28,10 +20,10 @@ enum ITermController {
                 end tell
             end if
             tell current session of current window
-                write text "\(asCommand)"
+                write text \(Escaping.appleScriptString(shellCommand))
             end tell
         end tell
         """
-        AppleScriptRunner.run(script)
+        return AppleScriptRunner.run(script)
     }
 }

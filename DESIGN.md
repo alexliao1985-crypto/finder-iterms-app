@@ -23,14 +23,21 @@ finder-iterms-app/
 ├── README.md
 ├── Package.swift               # SPM 可执行工程
 ├── Sources/FinderLauncher/
-│   ├── main.swift              # 入口：读配置 → 取路径 → 驱动 iTerm2 → 退出
-│   ├── FinderPath.swift        # 读取 Finder 最前窗口的目录
-│   └── ITermController.swift   # 驱动 iTerm2（新建窗口/Tab + 执行命令）
+│   ├── main.swift              # 入口：读配置 → 取路径 → 驱动 iTerm2 → 退出（出错弹框）
+│   ├── FinderPath.swift        # 读取 Finder 选中的文件夹 / 最前窗口的目录
+│   ├── ITermController.swift   # 驱动 iTerm2（新建窗口/Tab + 执行命令）
+│   ├── AppleScriptRunner.swift # 执行 AppleScript，返回结果或错误码
+│   └── ErrorAlert.swift        # 授权被拒等错误的提示对话框
+├── Sources/LauncherCore/
+│   └── Escaping.swift          # shell / AppleScript 转义（纯逻辑，可单测）
+├── Tests/LauncherCoreTests/    # 转义单元测试（swift test）
 ├── variants/                   # 每个按钮一个配置文件
 │   ├── OpenIniTerm.json
 │   ├── OpenClaude.json
+│   ├── OpenClaudeYolo.json
 │   └── OpenHermes.json
 ├── build.sh                    # 编译一次，按配置批量打出 N 个 .app
+├── .github/workflows/ci.yml    # macOS CI：单测 + 打包 + plist/签名校验
 └── dist/                       # 产物（git 忽略）
     ├── OpenIniTerm.app
     ├── OpenClaude.app
@@ -45,11 +52,12 @@ finder-iterms-app/
 点击工具栏图标
   → app 启动（LSUIElement=YES，无窗口不占 Dock）
   → 读 Bundle 的 LauncherCommand 字段
-  → AppleScript 问 Finder：最前窗口的目录路径（无窗口/特殊视图时 fallback 到 ~）
+  → AppleScript 问 Finder：选中了恰好一个文件夹/磁盘 → 用它；否则用最前窗口的目录
+    （无窗口/特殊视图时 fallback 到 ~）
   → AppleScript 驱动 iTerm2：
       - iTerm2 无窗口 → 新建窗口；已有窗口 → 当前窗口新建 Tab
       - 在新 session 中 write text "cd '<路径>' && <命令>"
-  → app 立即退出（生命周期 < 1 秒）
+  → app 立即退出（生命周期 < 1 秒）；自动化授权被拒或 iTerm2 报错时弹框提示后退出
 ```
 
 ## 4. 变体配置 Schema（variants/*.json）
@@ -58,7 +66,7 @@ finder-iterms-app/
 {
   "name": "OpenClaude",
   "display_name": "Claude Code Here",
-  "bundle_id": "com.alex.finderlauncher.claude",
+  "bundle_id": "com.finderlauncher.claude",
   "command": "claude",
   "icon": "/Applications/Claude.app/Contents/Resources/electron.icns"
 }
@@ -69,7 +77,7 @@ finder-iterms-app/
 | `name` | 产物 app 名（`dist/<name>.app`） |
 | `display_name` | Finder 中显示的名称 |
 | `bundle_id` | 每个变体唯一，用于系统自动化授权（TCC）记录 |
-| `command` | cd 之后要执行的命令，空字符串表示只 cd |
+| `command` | cd 之后要执行的命令，空字符串表示只 cd；必须是单行（含换行时 build.sh 报错） |
 | `icon` | `.icns` 文件路径，或 `.app` 路径（打包时自动提取该应用图标）；留空/找不到时用默认 iTerm2 图标 |
 
 ### 自定义按钮（add-button.sh）
@@ -86,12 +94,13 @@ finder-iterms-app/
 
 | 决策点 | 选择 | 理由 |
 |---|---|---|
-| 工程形态 | SPM（`swift build`），不用 Xcode 工程 | 核心代码约 100 行，脚本打包更适合批量出变体 |
+| 工程形态 | SPM（`swift build`），不用 Xcode 工程 | 核心代码约 150 行，脚本打包更适合批量出变体 |
 | Finder/iTerm2 通信 | Apple Events（NSAppleScript） | 官方支持、无需额外依赖；iTerm2 的 AppleScript API 支持 `write text`，可在 cd 后接任意命令 |
 | 打开方式 | iTerm2 已有窗口开新 Tab，否则开新窗口 | 符合日常使用直觉，避免窗口泛滥 |
 | 命令执行 | `write text "cd 'dir' && cmd"` | 在用户的交互式 shell 中执行，PATH 等环境与手敲一致（`~/.local/bin/claude` 可直接找到） |
 | 签名 | ad-hoc（`codesign -s -`） | 仅本机自用，无需开发者账号/公证 |
-| 路径转义 | 目录中的 `'` 转义为 `'\''`；整条命令再按 AppleScript 字符串规则转义 `\` 和 `"` | 防止特殊字符目录名破坏命令 |
+| 路径转义 | 目录中的 `'` 转义为 `'\''`；整条命令再按 AppleScript 字符串规则转义 `\` 和 `"`（`LauncherCore/Escaping.swift`，有单测） | 防止特殊字符目录名破坏命令 |
+| Info.plist 生成 | heredoc 写入时对值做 XML 转义（`& < >`），写完 `plutil -lint` | 命令里常见 `&&`，不转义会生成非法 plist |
 
 ## 6. 权限（TCC）
 
@@ -104,9 +113,11 @@ finder-iterms-app/
 | 场景 | 行为 |
 |---|---|
 | Finder 没有打开任何窗口 | fallback 到 `~` |
+| Finder 中恰好选中一个文件夹或磁盘 | 打开该文件夹（选中文件或多个项目时忽略选择） |
 | 最前窗口是"最近使用/AirDrop"等无实际路径的视图 | AppleScript 取 alias 失败，fallback 到 `~` |
 | 目录名含单引号/空格/中文 | 已转义，正常工作 |
-| 用户拒绝自动化授权 | 静默失败，日志写入统一日志（Console.app 可查）；到系统设置手动开启后恢复 |
+| 用户拒绝自动化授权（-1743） | 弹框说明，并提供"打开系统设置"按钮直达 自动化 设置；开启后恢复 |
+| iTerm2 其他 AppleScript 错误 | 弹框显示错误信息和错误码，同时写入统一日志 |
 | iTerm2 未启动 | `tell application "iTerm"` 自动拉起 |
 
 ## 8. 构建与安装
@@ -130,4 +141,3 @@ finder-iterms-app/
 
 - 新增按钮（如 VS Code、Warp）：在 `variants/` 加一个 JSON，重跑 `build.sh`
 - 支持"新窗口 vs 新 Tab"策略配置化（变体 JSON 加 `window_mode` 字段）
-- 支持选中文件夹优先于当前窗口目录（读 Finder selection）

@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unit tests
+        run: swift test
+
+      - name: Shell syntax (system bash 3.2)
+        run: |
+          /bin/bash --version | head -1
+          /bin/bash -n build.sh
+          /bin/bash -n add-button.sh
+
+      - name: Package all variants
+        run: /bin/bash build.sh
+
+      - name: Variant with XML special characters survives packaging
+        run: |
+          cat > variants/CITest.json <<'JSON'
+          {"name":"CITest","display_name":"CI <Test> & Co","bundle_id":"com.finderlauncher.citest","command":"npm i && echo \"<ok>\" 'x' > /dev/null","icon":""}
+          JSON
+          /bin/bash build.sh CITest
+          test "$(plutil -extract LauncherCommand raw dist/CITest.app/Contents/Info.plist)" = "npm i && echo \"<ok>\" 'x' > /dev/null"
+          test "$(plutil -extract CFBundleName raw dist/CITest.app/Contents/Info.plist)" = "CI <Test> & Co"
+
+      - name: Multi-line command is rejected
+        run: |
+          printf '%s\n' '{"name":"CIBad","display_name":"x","bundle_id":"com.finderlauncher.cibad","command":"echo a\necho b","icon":""}' > variants/CIBad.json
+          if /bin/bash build.sh CIBad; then echo "expected failure"; exit 1; fi
+
+      - name: Lint plists and verify signatures
+        run: |
+          for app in dist/*.app; do
+            plutil -lint "$app/Contents/Info.plist"
+            codesign --verify --verbose "$app"
+          done

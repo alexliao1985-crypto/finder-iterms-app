@@ -30,6 +30,17 @@ if [[ ! "$NAME" =~ ^[A-Za-z][A-Za-z0-9]*$ ]]; then
     exit 1
 fi
 
+case "$COMMAND" in
+    *$'\n'*|*$'\r'*)
+        echo "ERROR: 命令不能包含换行，多条命令请用 && 或 ; 连接"
+        exit 1 ;;
+esac
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "ERROR: 需要 jq（macOS 15+ 自带；更早的系统请先 brew install jq）"
+    exit 1
+fi
+
 [[ -z "$DISPLAY_NAME" ]] && DISPLAY_NAME="$NAME"
 BUNDLE_ID="com.finderlauncher.$(echo "$NAME" | tr '[:upper:]' '[:lower:]')"
 CFG="variants/$NAME.json"
