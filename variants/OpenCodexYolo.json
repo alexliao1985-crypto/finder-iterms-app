@@ -1,0 +1,7 @@
+{
+  "name": "OpenCodexYolo",
+  "display_name": "Codex Here (YOLO)",
+  "bundle_id": "com.finderlauncher.codexyolo",
+  "command": "codex --dangerously-bypass-approvals-and-sandbox",
+  "icon": "/Applications/Codex.app/Contents/Resources/electron.icns"
+}
